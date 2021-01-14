@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src",
+    "tsBuildInfoFile": "./dist/.tsbuildinfo",
+    "allowJs": true,
+    "checkJs": true
+  },
+  "include": ["src", "tests", "jest.config.ts", "rollup.config.ts", "scripts"],
+  "exclude": ["../*.json"]
+}

@@ -1,0 +1,9 @@
+{
+  "out": "./docs/",
+  "readme": "./README.md",
+  "name": "josh",
+  "entryPoints": ["src/index.ts"],
+  "exclude": ["**/node_modules/**", "tests/**", "**/dist/**"],
+  "excludeExternals": true,
+  "tsconfig": "./tsconfig.base.json"
+}

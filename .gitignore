@@ -1,11 +1,21 @@
-.hgignore
-node_modules
-.c9
-.DS_Store
-Thumbs.db
-data/
-config.json
-.vscode
-data/
-out/
-config-*.json
+# Ignore a blackhole and the folders for development.
+node_modules/
+.vs/
+docs/
+
+# Ignore tsc dist folder.
+dist/
+
+# Ignore Javascript files.
+**/*.js
+**/*.mjs
+**/*.js.map
+**/*.d.ts
+!src/**/*.d.ts
+**/*.tsbuildinfo
+!jest.confg.ts
+!scripts/*.mjs
+
+# Ignore heapsnapshot and log files.
+*.heapsnapshot
+*.log
