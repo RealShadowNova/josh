@@ -1,8 +1,8 @@
-import type { JoshProvider } from '../structures/JoshProvider';
+import type { BaseJoshProvider } from '../structures/BaseJoshProvider';
 import type { Awaited } from './Awaited';
 
 export interface JoshOptions<T = unknown, K = T> {
-  provider: typeof JoshProvider;
+  provider: typeof BaseJoshProvider;
   providerOptions: Record<string, unknown>;
   name?: string;
   ensureProps?: boolean;

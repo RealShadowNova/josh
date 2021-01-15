@@ -1,6 +1,6 @@
 import type { JoshOptions } from '../types/JoshOptions';
 import { JoshError } from './JoshError';
-import type { JoshProvider } from './JoshProvider';
+import type { BaseJoshProvider } from './BaseJoshProvider';
 import { get, merge } from 'lodash';
 import type { ExportJSON } from '../types/ExportJSON';
 import type { Awaited } from '../types/Awaited';
@@ -45,7 +45,7 @@ export class Josh<T = unknown, K = T> {
   public all = Symbol('_all');
   public off = Symbol('_off');
 
-  private provider: JoshProvider<K>;
+  private provider: BaseJoshProvider<K>;
 
   private serializer: (data: T | unknown, key?: string, path?: string) => Awaited<K>;
   private deserializer: (data: K | unknown, key?: string, path?: string) => Awaited<T>;
@@ -71,9 +71,9 @@ export class Josh<T = unknown, K = T> {
     if (!name) throw new JoshError('Name option not found', 'JoshOptionsError');
 
     // @ts-expect-error 2511
-    const initializedProvider = new Provider({ name, options: options.providerOptions });
-    if (initializedProvider.constructor.name !== 'JoshProvider')
-      throw new JoshError(`JoshProvider ivalid. ${initializedProvider.constructor.name} is not a valid provider.`);
+    const initializedProvider = new Provider({ name, instance: this, options: options.providerOptions });
+    if (initializedProvider.constructor.name !== 'BaseJoshProvider')
+      throw new JoshError(`BaseJoshProvider ivalid. ${initializedProvider.constructor.name} is not a valid provider.`);
 
     this.provider = initializedProvider;
     this.name = name;
