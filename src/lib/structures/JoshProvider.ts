@@ -103,4 +103,13 @@ export abstract class JoshProvider<D = unknown, S = D> {
 	public abstract autoId(): Awaited<string>;
 
 	public abstract destroy(): Awaited<void>;
+
+	/**
+	 * Internal method of splitting key and path strings.
+	 * @param keyOrPath The key and path to split.
+	 */
+	protected getKeyAndPath(keyOrPath: string): [string, string] {
+		const [key, ...path] = keyOrPath.split('.');
+		return [key, path.join('.')];
+	}
 }

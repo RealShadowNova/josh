@@ -5,15 +5,39 @@ import type { Awaited } from '../types/Awaited';
 import { MapProvider } from './MapProvider';
 
 export interface JoshOptions<D = unknown, S = D> {
+	/**
+	 * The provider to use for this [[Josh]] instance.
+	 */
 	provider?: typeof JoshProvider;
-	providerOptions?: Record<string, unknown>;
+	/**
+	 * The options for the provider
+	 */
+	providerOptions?: JoshOptions<D, S>;
+	/**
+	 * The name for this [[Josh]] instance.
+	 */
 	name?: string;
+	/**
+	 * Whether to ensure props or not.
+	 */
 	ensureProps?: boolean;
+	/**
+	 * The automatic ensure value.
+	 */
 	autoEnsure?: S;
+	/**
+	 * The serializer function to get the value stored into the provider.
+	 */
 	serializer?: (data: D, key?: string, path?: string) => Awaited<S>;
+	/**
+	 * The deserializer function to get the value from the provider.
+	 */
 	deserializer?: (data: S, key?: string, path?: string) => Awaited<D>;
 }
 
+/**
+ * The export JSON value for Josh's data.
+ */
 export interface ExportJSON<K = unknown> {
 	name: string;
 	exportTimestamp: number;
@@ -67,6 +91,9 @@ export class Josh<D = unknown, S = D> {
 
 	private provider: JoshProvider<D, S>;
 
+	/**
+	 * Whether this instance is destroyed or not.
+	 */
 	private isDestroyed = false;
 
 	private ready!: (value?: unknown) => void;
@@ -74,7 +101,7 @@ export class Josh<D = unknown, S = D> {
 
 	/**
 	 *
-	 * @param options The options for this [[Josh]] instance.
+	 * @param __namedParameters The options for this [[Josh]] instance.
 	 */
 	public constructor({ name, provider, ...options }: JoshOptions<D, S>) {
 		if (!name) throw new JoshError('Name option not found', 'JoshOptionsError');
@@ -132,7 +159,7 @@ export class Josh<D = unknown, S = D> {
 		await this.readyCheck();
 
 		try {
-			const [key, path] = this.getSeyAndPath(keyOrPath);
+			const [key, path] = this.getKeyAndPath(keyOrPath);
 			return this.provider.has(key, path);
 		} catch (error) {
 			console.log(`Error on "${keyOrPath}": ${error}`);
@@ -147,10 +174,10 @@ export class Josh<D = unknown, S = D> {
 	public async get<V = D>(keyOrPath: string): Promise<V | null> {
 		await this.readyCheck();
 
-		const [key, path] = this.getSeyAndPath(keyOrPath);
-		const hasSey = await this.has(keyOrPath);
+		const [key, path] = this.getKeyAndPath(keyOrPath);
+		const hasKey = await this.has(keyOrPath);
 
-		const value = hasSey ? await this.provider.get(key, path) : this.autoEnsure ?? null;
+		const value = hasKey ? await this.provider.get(key, path) : this.autoEnsure ?? null;
 		const deserialized = value ? await this.deserializer(value, key, path) : null;
 
 		return deserialized ? (path.length ? get(deserialized, path) ?? null : deserialized) : null;
@@ -185,7 +212,7 @@ export class Josh<D = unknown, S = D> {
 	 * Returns one or more random keys from the provider.
 	 * @param count The number of random values to get. Defaults to `1`.
 	 */
-	public async randomSey(count = 1) {
+	public async randomKey(count = 1) {
 		await this.readyCheck();
 
 		return this.provider.randomKey(count);
@@ -220,7 +247,7 @@ export class Josh<D = unknown, S = D> {
 	public async set<V = D>(keyOrPath: string, value: V): Promise<Josh<D, S>> {
 		await this.readyCheck();
 
-		const [key, path] = this.getSeyAndPath(keyOrPath);
+		const [key, path] = this.getKeyAndPath(keyOrPath);
 
 		await this.provider.set(key, path, await this.serializer(value as any, key, path));
 
@@ -272,9 +299,9 @@ export class Josh<D = unknown, S = D> {
 	public async ensure<V = D>(keyOrPath: string, defaultValue: V) {
 		await this.readyCheck();
 
-		const hasSey = await this.has(keyOrPath);
+		const hasKey = await this.has(keyOrPath);
 
-		if (!hasSey) {
+		if (!hasKey) {
 			await this.set<V>(keyOrPath, defaultValue);
 			return defaultValue;
 		}
@@ -294,7 +321,7 @@ export class Josh<D = unknown, S = D> {
 		} else if (keyOrPath === this.all) {
 			await this.provider.clear();
 		} else {
-			const [key, path] = this.getSeyAndPath(keyOrPath as string);
+			const [key, path] = this.getKeyAndPath(keyOrPath as string);
 			await this.provider.delete(key, path);
 		}
 
@@ -310,7 +337,7 @@ export class Josh<D = unknown, S = D> {
 	public async push<V = D>(keyOrPath: string, value: V, allowDupes = true): Promise<Josh<D, S>> {
 		await this.readyCheck();
 
-		const [key, path] = this.getSeyAndPath(keyOrPath);
+		const [key, path] = this.getKeyAndPath(keyOrPath);
 		await this.provider.push<V>(key, path, ((await this.serializer(value as any, key, path)) as unknown) as V, allowDupes);
 
 		return this;
@@ -324,7 +351,7 @@ export class Josh<D = unknown, S = D> {
 	public async remove<V = D>(keyOrPath: string, valueOrFn: ((value: V) => Awaited<boolean>) | V): Promise<Josh<D, S>> {
 		await this.readyCheck();
 
-		const [key, path] = this.getSeyAndPath(keyOrPath);
+		const [key, path] = this.getKeyAndPath(keyOrPath);
 		await this.provider.remove(key, path, valueOrFn);
 
 		return this;
@@ -337,7 +364,7 @@ export class Josh<D = unknown, S = D> {
 	public async inc(keyOrPath: string) {
 		await this.readyCheck();
 
-		const [key, path] = this.getSeyAndPath(keyOrPath);
+		const [key, path] = this.getKeyAndPath(keyOrPath);
 		await this.provider.inc(key, path);
 
 		return this;
@@ -350,7 +377,7 @@ export class Josh<D = unknown, S = D> {
 	public async dec(keyOrPath: string) {
 		await this.readyCheck();
 
-		const [key, path] = this.getSeyAndPath(keyOrPath);
+		const [key, path] = this.getKeyAndPath(keyOrPath);
 		await this.provider.dec(key, path);
 
 		return this;
@@ -428,7 +455,7 @@ export class Josh<D = unknown, S = D> {
 	 */
 	public async includes<V = D>(keyOrPath: string, value: V) {
 		await this.readyCheck();
-		const [key, path] = this.getSeyAndPath(keyOrPath);
+		const [key, path] = this.getKeyAndPath(keyOrPath);
 		return this.provider.includes(key, path, value);
 	}
 
@@ -481,7 +508,7 @@ export class Josh<D = unknown, S = D> {
 	public async math(keyOrPath: string, operation: string, operand: number) {
 		await this.readyCheck();
 
-		const [key, path] = this.getSeyAndPath(keyOrPath);
+		const [key, path] = this.getKeyAndPath(keyOrPath);
 
 		await this.provider.math(key, path, operation, operand);
 	}
@@ -541,7 +568,7 @@ export class Josh<D = unknown, S = D> {
 	 * Internal method of splitting key and path strings.
 	 * @param keyOrPath The key and path to split.
 	 */
-	private getSeyAndPath(keyOrPath: string): [string, string] {
+	private getKeyAndPath(keyOrPath: string): [string, string] {
 		const [key, ...path] = keyOrPath.split('.');
 		return [key, path.join('.')];
 	}

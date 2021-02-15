@@ -98,7 +98,7 @@ export class MapProvider<D = unknown, S = D> extends JoshProvider<D, S> {
 	}
 
 	public deleteMany(keysOrPaths: string[]) {
-		for (const [key, path] of keysOrPaths.map((keyOrPath) => this.getSeyAndPath(keyOrPath))) this.delete(key, path);
+		for (const [key, path] of keysOrPaths.map((keyOrPath) => this.getKeyAndPath(keyOrPath))) this.delete(key, path);
 
 		return this;
 	}
@@ -380,14 +380,5 @@ export class MapProvider<D = unknown, S = D> extends JoshProvider<D, S> {
 
 	public destroy() {
 		this.cache.clear();
-	}
-
-	/**
-	 * Internal method of splitting key and path strings.
-	 * @param keyOrPath The key and path to split.
-	 */
-	private getSeyAndPath(keyOrPath: string): [string, string] {
-		const [key, ...path] = keyOrPath.split('.');
-		return [key, path.join('.')];
 	}
 }
