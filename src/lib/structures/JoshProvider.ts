@@ -45,7 +45,9 @@ export abstract class JoshProvider<D = unknown, S = D> {
 	 */
 	public options: JoshProviderOptions;
 
-	public constructor({ name, options, instance }: JoshProviderContext<D, S>) {
+	public constructor(context: JoshProviderContext<D, S>) {
+		const { name, options, instance } = context;
+
 		this.name = name ?? 'unknown';
 		this.options = options ?? {};
 		this.instance = instance;

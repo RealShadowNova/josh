@@ -101,9 +101,11 @@ export class Josh<D = unknown, S = D> {
 
 	/**
 	 *
-	 * @param __namedParameters The options for this [[Josh]] instance.
+	 * @param options The options for this [[Josh]] instance.
 	 */
-	public constructor({ name, provider, ...options }: JoshOptions<D, S>) {
+	public constructor(options: JoshOptions<D, S>) {
+		const { name, provider } = options;
+
 		if (!name) throw new JoshError('Name option not found', 'JoshOptionsError');
 
 		const Provider = provider ?? Josh.defaultProvider;
