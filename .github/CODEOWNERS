@@ -1,0 +1,10 @@
+# Default Evie for everything
+* @Evie
+
+# Just RSN
+*tsconfig* @RealShadowNova
+rollup.config.ts @RealShadowNova
+.editorconfig @RealShadowNova
+/.github @RealShadowNova
+/scripts @RealShadowNova
+/.vscode @RealShadowNova
